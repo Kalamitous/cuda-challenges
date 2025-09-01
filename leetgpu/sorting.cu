@@ -7,12 +7,15 @@ __global__ void bitonic_sort_step(float* data, int j, int k) {
 
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int ixj = i ^ j; // the index j distance away from i
+    // xor because we want pairwise partners
+    // i.e. if i is 1 and we determine that its partner is 2,
+    // then when i is 2, its partner must be 1
 
-    // avoids duplicate comparison when future i = current j for example
+    // using the above example, avoids duplicate comparison (when i is 2)
     if (ixj > i) {
         float a = data[i];
         float b = data[ixj];
-        if (i & k == 0) {
+        if ((i & k) == 0) { // == has higher precedence than &
             // sort ascending
             if (a > b) {
                 data[i] = b;
