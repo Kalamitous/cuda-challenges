@@ -25,6 +25,7 @@ This repository contains my CUDA kernels for challenges on [LeetGPU](https://lee
 | Batched Matrix Multiplication | Medium | [batched_matrix_multiplication.cu](leetgpu/batched_matrix_multiplication.cu) |
 | Monte Carlo Integration | Medium | [monte_carlo_integration.cu](leetgpu/monte_carlo_integration.cu) |
 | Nearest Neighbor | Medium | [nearest_neighbor.cu](leetgpu/nearest_neighbor.cu) |
+| Batch Normalization | Medium | [batch_normalization.cu](leetgpu/batch_normalization.cu) |
 
 ## Tensara Solutions
 
