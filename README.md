@@ -26,6 +26,7 @@ This repository contains my CUDA kernels for challenges on [LeetGPU](https://lee
 | Monte Carlo Integration | Medium | [monte_carlo_integration.cu](leetgpu/monte_carlo_integration.cu) |
 | Nearest Neighbor | Medium | [nearest_neighbor.cu](leetgpu/nearest_neighbor.cu) |
 | Batch Normalization | Medium | [batch_normalization.cu](leetgpu/batch_normalization.cu) |
+| 2D Max Pooling | Medium | [2d_max_pooling.cu](leetgpu/2d_max_pooling.cu) |
 
 ## Tensara Solutions
 
