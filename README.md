@@ -22,6 +22,7 @@ This repository contains my CUDA kernels for challenges on [LeetGPU](https://lee
 | General Matrix Multiplication (GEMM) | Medium | [gemm.cu](leetgpu/gemm.cu) |
 | Categorical Cross Entropy Loss | Medium | [categorical_cross_entropy_loss.cu](leetgpu/categorical_cross_entropy_loss.cu) |
 | Mean Squared Error | Medium | [mean_squared_error.cu](leetgpu/mean_squared_error.cu) |
+| Gaussian Blur | Medium | [gaussian_blur.cu](leetgpu/gaussian_blur.cu) |
 | Top K Selection | Medium | [top_k_selection.cu](leetgpu/top_k_selection.cu) |
 | Batched Matrix Multiplication | Medium | [batched_matrix_multiplication.cu](leetgpu/batched_matrix_multiplication.cu) |
 | Monte Carlo Integration | Medium | [monte_carlo_integration.cu](leetgpu/monte_carlo_integration.cu) |
