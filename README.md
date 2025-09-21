@@ -26,6 +26,7 @@ This repository contains my CUDA kernels for challenges on [LeetGPU](https://lee
 | Top K Selection | Medium | [top_k_selection.cu](leetgpu/top_k_selection.cu) |
 | Batched Matrix Multiplication | Medium | [batched_matrix_multiplication.cu](leetgpu/batched_matrix_multiplication.cu) |
 | INT8 Quantized MatMul | Medium | [int8_quantized_matmul.cu](leetgpu/int8_quantized_matmul.cu) |
+| Ordinary Least Squares | Medium | [ordinary_least_squares.cu](leetgpu/ordinary_least_squares.cu) |
 | Monte Carlo Integration | Medium | [monte_carlo_integration.cu](leetgpu/monte_carlo_integration.cu) |
 | Nearest Neighbor | Medium | [nearest_neighbor.cu](leetgpu/nearest_neighbor.cu) |
 | Batch Normalization | Medium | [batch_normalization.cu](leetgpu/batch_normalization.cu) |
