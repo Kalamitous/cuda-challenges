@@ -14,6 +14,7 @@ This repository contains my CUDA kernels for challenges on [LeetGPU](https://lee
 | Rainbow Table | Easy | [rainbow_table.cu](leetgpu/rainbow_table.cu) |
 | Reduction | Medium | [reduction.cu](leetgpu/reduction.cu) |
 | Softmax | Medium | [softmax.cu](leetgpu/softmax.cu) |
+| Softmax Attention | Medium | [softmax_attention.cu](leetgpu/softmax_attention.cu) |
 | 2D Convolution | Medium | [2d_convolution.cu](leetgpu/2d_convolution.cu) |
 | Sorting | Medium | [sorting.cu](leetgpu/sorting.cu) |
 | Prefix Sum | Medium | [prefix_sum.cu](leetgpu/prefix_sum.cu) |
