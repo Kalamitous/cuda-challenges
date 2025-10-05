@@ -41,6 +41,7 @@ This repository contains my CUDA kernels for challenges on [LeetGPU](https://lee
 | Vector Addition | Easy | [vector_addition.cu](tensara/vector_addition.cu) |
 | ReLU | Easy | [relu.cu](tensara/relu.cu) |
 | 1D Average Pooling | Easy | [1d_average_pooling.cu](tensara/1d_average_pooling.cu) |
+| Matrix Vector Multiplication | Easy | [matrix_vector_multiplication.cu](tensara/matrix_vector_multiplication.cu) |
 | Image Histogram | Easy | [image_histogram.cu](tensara/image_histogram.cu) |
 | Box Blur | Easy | [box_blur.cu](tensara/box_blur.cu) |
 | 1D Running Sum | Easy | [1d_running_sum.cu](tensara/1d_running_sum.cu) |
