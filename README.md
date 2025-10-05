@@ -32,6 +32,7 @@ This repository contains my CUDA kernels for challenges on [LeetGPU](https://lee
 | Nearest Neighbor | Medium | [nearest_neighbor.cu](leetgpu/nearest_neighbor.cu) |
 | Batch Normalization | Medium | [batch_normalization.cu](leetgpu/batch_normalization.cu) |
 | 2D Max Pooling | Medium | [2d_max_pooling.cu](leetgpu/2d_max_pooling.cu) |
+| Count 3D Array Element | Medium | [count_3d_array_element.cu](leetgpu/count_3d_array_element.cu) |
 
 ## Tensara Solutions
 
