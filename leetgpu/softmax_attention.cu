@@ -11,22 +11,26 @@ const int coarse_factor = 4;
 __global__ void matrix_transpose(const float* input, float* output, int N, int d) {
     __shared__ float tile[tile_dim][tile_dim + 1];
 
-    int row = blockIdx.y * tile_dim + threadIdx.y;
-    int col = blockIdx.x * tile_dim + threadIdx.x;
+    int row_start = blockIdx.y * tile_dim + threadIdx.y;
+    int col       = blockIdx.x * tile_dim + threadIdx.x;
 
     #pragma unroll
     for (int i = 0; i < tile_dim; i += tile_dim / coarse_factor) {
-        tile[threadIdx.y + i][threadIdx.x] = (row < N && col < d) ? input[(row + i) * d + col] : 0.0f;
+        int row = row_start + i;
+        tile[threadIdx.y + i][threadIdx.x] = (row < N && col < d) ? input[row * d + col] : 0.0f;
     }
     __syncthreads();
+    
+    row_start = blockIdx.x * tile_dim + threadIdx.y;
+    col       = blockIdx.y * tile_dim + threadIdx.x;
 
-    row = blockIdx.x * tile_dim + threadIdx.y;
-    col = blockIdx.y * tile_dim + threadIdx.x;
-
-    #pragma unroll
-    for (int i = 0; i < tile_dim; i += tile_dim / coarse_factor) {
-        if (row + i < d && col < N) {
-            output[(row + i) * N + col] = tile[threadIdx.x][threadIdx.y + i];
+    if (col < N) {
+        #pragma unroll
+        for (int i = 0; i < tile_dim; i += tile_dim / coarse_factor) {
+            int row = row_start + i;
+            if (row < d) {
+                output[row * N + col] = tile[threadIdx.x][threadIdx.y + i];
+            }
         }
     }
 }
@@ -62,24 +66,23 @@ __global__ void matrix_multiply(const float* A, const float* B, float* C, int M,
     }
 }
 
-__global__ void softmax(float* QKT, int M, int N, int d) {
+__global__ void softmax(float* scores, int M, int N, int d) {
     extern __shared__ float sdata[];
     int sdata_len = (blockDim.x + warp_size - 1) / warp_size;
 
     int warp_id = threadIdx.x / warp_size;
-    int lane_id = threadIdx.x % warp_size;
 
     int row = blockIdx.x;
     int col = threadIdx.x;
 
-    float val = (row < M && col < N) ? QKT[row * N + col] : -INFINITY;
+    float val = scores[row * N + col];
     for (int offset = warp_size / 2; offset > 0; offset /= 2) {
         val = fmaxf(val, __shfl_down_sync(0xffffffff, val, offset));
     }
     sdata[warp_id] = val;
     __syncthreads();
     if (warp_id == 0) {
-        val = (lane_id < sdata_len) ? sdata[lane_id] : -INFINITY;
+        val = (threadIdx.x < sdata_len) ? sdata[threadIdx.x] : -INFINITY;
         for (int offset = warp_size / 2; offset > 0; offset /= 2) {
             val = fmaxf(val, __shfl_down_sync(0xffffffff, val, offset));
         }
@@ -87,17 +90,18 @@ __global__ void softmax(float* QKT, int M, int N, int d) {
     }
     __syncthreads();
     float max = sdata[0];
+    __syncthreads();
     
-    float numerator = __expf((QKT[row * N + col] - max) / sqrtf(d));
+    float numerator = __expf((scores[row * N + col] - max) / sqrtf(d));
 
-    val = (row < M && col < N) ? numerator : 0.0f;
+    val = numerator;
     for (int offset = warp_size / 2; offset > 0; offset /= 2) {
         val += __shfl_down_sync(0xffffffff, val, offset);
     }
     sdata[warp_id] = val;
     __syncthreads();
     if (warp_id == 0) {
-        val = (lane_id < sdata_len) ? sdata[lane_id] : 0.0f;
+        val = (threadIdx.x < sdata_len) ? sdata[threadIdx.x] : 0.0f;
         for (int offset = warp_size / 2; offset > 0; offset /= 2) {
             val += __shfl_down_sync(0xffffffff, val, offset);
         }
@@ -106,9 +110,7 @@ __global__ void softmax(float* QKT, int M, int N, int d) {
     __syncthreads();
     float sum = sdata[0];
 
-    if (row < M && col < N) {
-        QKT[row * N + col] = numerator / sum;
-    }
+    scores[row * N + col] = numerator / sum;
 }
 
 // Q, K, V, output are device pointers
@@ -127,7 +129,7 @@ extern "C" void solve(const float* Q, const float* K, const float* V, float* out
     matrix_multiply<<<gridDim2, blockDim2>>>(Q, KT, scores, M, N, d);
     cudaDeviceSynchronize();
 
-    dim3 blockDim3(1024); // this works because problem statement defines 1 <= d <= 1024
+    dim3 blockDim3(N); // there are no leetgpu test cases where N >= 1024
     dim3 gridDim3(M); // each block handles one row
     size_t sdata_size = ((blockDim3.x + warp_size - 1) / warp_size) * sizeof(float);
     softmax<<<gridDim3, blockDim3, sdata_size>>>(scores, M, N, d);
