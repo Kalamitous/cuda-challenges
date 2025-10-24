@@ -16,6 +16,7 @@ This repository contains my CUDA kernels for challenges on [LeetGPU](https://lee
 | Softmax | Medium | [softmax.cu](leetgpu/softmax.cu) |
 | Softmax Attention | Medium | [softmax_attention.cu](leetgpu/softmax_attention.cu) |
 | 2D Convolution | Medium | [2d_convolution.cu](leetgpu/2d_convolution.cu) |
+| Histogramming | Medium | [histogramming.cu](leetgpu/histogramming.cu) |
 | Sorting | Medium | [sorting.cu](leetgpu/sorting.cu) |
 | Prefix Sum | Medium | [prefix_sum.cu](leetgpu/prefix_sum.cu) |
 | Dot Product | Medium | [dot_product.cu](leetgpu/dot_product.cu) |
