@@ -1,55 +1,46 @@
 #include <cuda_runtime.h>
 
-#define WARP_SIZE 32
+const int warp_size = 32;
+
+// more atomicAdds can result in rounding errors
+const int threads = 256;
+const int coarse_factor = 8;
+const int inputs_per_thread = threads * coarse_factor;
 
 __global__ void reduction(const float* input, float* output, int N) {
-    __shared__ float smem[WARP_SIZE];
-    
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    float val = (i < N) ? input[i] : 0.0f;
-    
-    for (int offset = WARP_SIZE / 2; offset > 0; offset /= 2) {
+    __shared__ float sdata[threads / warp_size];
+
+    int warp_id = threadIdx.x / warp_size;
+    int lane_id = threadIdx.x % warp_size;
+
+    int idx = blockIdx.x * inputs_per_thread + threadIdx.x;
+
+    float val = 0.0f;
+    #pragma unroll
+    for (int stride = 0; stride < inputs_per_thread; stride += threads) {
+        int i = idx + stride;
+        val += (i < N) ? input[i] : 0.0f;
+    }
+
+    #pragma unroll
+    for (int offset = warp_size / 2; offset > 0; offset /= 2) {
         val += __shfl_down_sync(0xffffffff, val, offset);
     }
-    // first thread of each warp holds warp-level local sum
+    if (lane_id == 0) sdata[warp_id] = val;
+    __syncthreads();
 
-    if (N > WARP_SIZE) {
-        if (threadIdx.x % WARP_SIZE == 0) {
-            smem[threadIdx.x / WARP_SIZE] = val;
+    if (warp_id == 0) {
+        val = (lane_id < threads / warp_size) ? sdata[lane_id] : 0.0f;
+        #pragma unroll
+        for (int offset = warp_size / 2; offset > 0; offset /= 2) {
+            val += __shfl_down_sync(0xffffffff, val, offset);
         }
-        __syncthreads();
-        // smem holds all warp-level local sums in block
-
-        if (threadIdx.x < WARP_SIZE) {
-            val = smem[threadIdx.x];
-            for (int offset = WARP_SIZE / 2; offset > 0; offset /= 2) {
-                val += __shfl_down_sync(0xffffffff, val, offset);
-            }
-        }
-        // first thread in block now holds block-level local sum 
-
-        if (N > blockDim.x) {
-            if (threadIdx.x == 0) {
-                atomicAdd(output, val);
-            }
-            // global sum is sum of all block-level local sums
-        } else {
-            if (i == 0) {
-                *output = val;
-            }
-            // global sum is block-level local sum since N <= blockDim.x
-        }
-    } else {
-        if (i == 0) {
-            *output = val;
-        }
-        // global sum is warp-level local sum since N is <= WARP_SIZE
+        if (lane_id == 0) atomicAdd(output, val);
     }
 }
 
 // input, output are device pointers
 extern "C" void solve(const float* input, float* output, int N) {  
-    int threads = WARP_SIZE * WARP_SIZE;
-    int blocks = (N + threads - 1) / threads;
+    int blocks = (N + inputs_per_thread - 1) / inputs_per_thread;
     reduction<<<blocks, threads>>>(input, output, N);
 }
