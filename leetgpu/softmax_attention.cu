@@ -71,6 +71,7 @@ __global__ void softmax(float* scores, int M, int N, int d) {
     int sdata_len = (blockDim.x + warp_size - 1) / warp_size;
 
     int warp_id = threadIdx.x / warp_size;
+    int lane_id = threadIdx.x % warp_size;
 
     int row = blockIdx.x;
     int col = threadIdx.x;
@@ -79,7 +80,7 @@ __global__ void softmax(float* scores, int M, int N, int d) {
     for (int offset = warp_size / 2; offset > 0; offset /= 2) {
         val = fmaxf(val, __shfl_down_sync(0xffffffff, val, offset));
     }
-    sdata[warp_id] = val;
+    if (lane_id == 0) sdata[warp_id] = val;
     __syncthreads();
     if (warp_id == 0) {
         val = (threadIdx.x < sdata_len) ? sdata[threadIdx.x] : -INFINITY;
@@ -98,7 +99,7 @@ __global__ void softmax(float* scores, int M, int N, int d) {
     for (int offset = warp_size / 2; offset > 0; offset /= 2) {
         val += __shfl_down_sync(0xffffffff, val, offset);
     }
-    sdata[warp_id] = val;
+    if (lane_id == 0) sdata[warp_id] = val;
     __syncthreads();
     if (warp_id == 0) {
         val = (threadIdx.x < sdata_len) ? sdata[threadIdx.x] : 0.0f;
